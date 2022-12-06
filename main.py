@@ -175,7 +175,7 @@ def mostrarCancionesGuardadas():
 def añadirCancionAPl(lista, results, i):
     for item in results['items']:
         track = item['track']
-        print("%i %32.32s %s" % (i, track['artists'][0]['name'], track['name']))
+        print("%i %32.32s %s %s" % (i, track['artists'][0]['name'], track['name'], item['added_at'][0:10]))
         lista.append(track['id'])
         i+=1
 
@@ -232,8 +232,33 @@ def player():
     sp.volume(100)"""
     topTracks = sp.current_user_top_tracks()
     #print(topTracks)
+def manipularString():
+    playlistsNames = ["January", "February", "March",
+                      "April", "May", "June",
+                      "July","August", "September",
+                      "October", "November", "December"]
+    scope = 'playlist-read-private'
+    sp = spotipy.Spotify(client_credentials_manager=SpotifyOAuth(client_id="36b01cc688714a62b1bd951f4e8ace81",
+                                                                 client_secret="c20b8762c2e6455bba424c1f60e64bf3",
+                                                                 redirect_uri="http://localhost:1234/",
+                                                                 scope=scope))
+
+
+    results = sp.current_user_playlists(limit=50)
+    i=0
+    for i, item in enumerate(results['items'], start=i):
+        print("%d %s" % (i, item['name']))
+    while results['next']:
+        for i, item in enumerate(results['items'],start=i):
+            print("%d %s" % (i, item['name']))
+        results = sp.next(results)
+    print(playlistsNames[11])
+    for i in playlistsNames:
+        print(i)
+    pass
 def main():
-    crearPlMensual()
+    manipularString()
+    #crearPlMensual()
     #player()
     #mostrarCancionesGuardadas()
     #añadirCancionGuardada()
