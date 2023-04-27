@@ -16,8 +16,8 @@ import pprint
 def credentialsSP():
     client_id = "36b01cc688714a62b1bd951f4e8ace81"
     client_secret = "c20b8762c2e6455bba424c1f60e64bf3"
-    return spotipy.Spotify(auth_manager=SpotifyOAuth(client_id="36b01cc688714a62b1bd951f4e8ace81",
-                                                   client_secret="c20b8762c2e6455bba424c1f60e64bf3",
+    return spotipy.Spotify(auth_manager=SpotifyOAuth(client_id="",
+                                                   client_secret="",
                                                    redirect_uri="http://localhost:1234/",
                                                    scope="playlist-modify-public"))
     #return spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id, client_secret))
