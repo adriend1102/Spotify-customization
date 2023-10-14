@@ -5,8 +5,9 @@ from time import sleep
 import time
 
 import argparse
+import os
 import logging
-
+import pandas as pd
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -25,10 +26,33 @@ class month_playlist:
         self.month = song.month
         self.year = song.year
         self.songs_id = np.array([song.song_id])
+        self.songs_id_df = np.array([song.song_id])
+        self.days = np.array([song.day])
+        self.names = np.array([song.name])
         self.playlist_id = ""
     def __str__(self):
         return f"month: {self.month}\n year: {self.year}\n songs_id: {self.songs_id}\n playlist_id: {self.playlist_id}"
     
+    def to_dataframe(self):
+        data = {
+            'Song ID': self.songs_id_df,
+            'Song Name': self.names,
+            'Day': self.days,
+            'Month': [self.month] * len(self.songs_id_df),
+            'Year': [self.year] * len(self.songs_id_df),
+            'Playlist ID': [self.playlist_id] * len(self.songs_id_df)
+        }
+
+        self.df = pd.DataFrame(data)
+        return self.df
+
+    def save_to_csv(self, filename):
+        df = self.to_dataframe()
+        directory = os.path.dirname(filename)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        df.to_csv(filename, index=False)
+
 class song_info:
     """ class song info
 
@@ -42,7 +66,8 @@ class song_info:
         self.day = int(track["added_at"][8:10])
         self.month = int(track["added_at"][5:7])
         self.year = int(track["added_at"][:4])
-        self.song_id = track["track"]["id"]
+        self.song_id = track["track"]["uri"]
+        self.name = track["track"]["name"]
 
 
     def __str__(self):
@@ -75,6 +100,9 @@ def add_track_to_playlist(sp, track, playlists):
     for playlist in playlists:
         if playlist.year == song.year and playlist.month == song.month:
             playlist.songs_id = np.append(playlist.songs_id, song.song_id)
+            playlist.songs_id_df = np.append(playlist.songs_id_df, song.song_id)
+            playlist.days = np.append(playlist.days, song.day)
+            playlist.names = np.append(playlist.names, song.name)
             pl_exist = True
             break
     if(not pl_exist):
@@ -82,7 +110,7 @@ def add_track_to_playlist(sp, track, playlists):
         if(playlists.size != 0):
             print(playlists[-1].songs_id.size)
             n=100
-            #split the last playlist
+            #split the last playlist (asuming that songs are ordered by added date)
             playlists[-1].songs_id = np.array_split(playlists[-1].songs_id, range(n, len(playlists[-1].songs_id), n))
             #print(playlists[-1].songs_id)
         new_playlist = month_playlist(song, sp)
@@ -128,6 +156,11 @@ def playlist_list_creation():
                 sp.current_user()['id'], playlist.playlist_id, songs
                 )
         print(f"playlist {playlist.month}/{playlist.year} created correctly")
+        folder_path = "df"  # Ruta completa de la carpeta donde deseas guardar los archivos
+        playlist.save_to_csv(os.path.join(folder_path, f"{playlist.month}_{playlist.year}.csv"))
+        print(playlist.df.head())
+
+    
 
 
 
@@ -197,7 +230,7 @@ def find_july_songs():
 def main():
     borrar_pl()
     inicio = time.time()
-    #playlist_list_creation()
+    playlist_list_creation()
     print(time.time()-inicio)
     
     #find_july_songs()
